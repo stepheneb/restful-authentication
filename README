@@ -97,7 +97,7 @@ acts as authenticated.  Currently it requires Rails 1.2.6 or above.
 
 To use:
 
-  ./script/generate authenticated user sessions \
+  ./script/generate authenticated user session \
     --include-activation \
     --stateful \
     --rspec \
@@ -146,9 +146,10 @@ The below assumes a Model named 'User' and a Controller named 'Session'; please
 alter to suit. There are additional security minutae in @notes/README-Tradeoffs@
 -- only the paranoid or the curious need bother, though.
 
-* Add these familiar login URLs to your @config/routes.rb@ if you like:
+* These familiar login URLs are added by the generator to @config/routes.rb@ unless you specified --skip_routes:
 
      map.signup  '/signup', :controller => 'users',   :action => 'new' @
+     map.register  '/register', :controller => 'users',   :action => 'create' @
      map.login   '/login',  :controller => 'sessions', :action => 'new' @
      map.logout  '/logout', :controller => 'sessions', :action => 'destroy' @
     
@@ -158,7 +159,7 @@ alter to suit. There are additional security minutae in @notes/README-Tradeoffs@
     
   and add an observer to @config/environment.rb@:
   
-    config.active_record.observers = :users_observer
+    config.active_record.observers = :user_observer
 
 * With @--stateful@, add an observer to config/environment.rb:
   

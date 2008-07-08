@@ -245,8 +245,22 @@ class AuthenticatedGenerator < Rails::Generator::NamedBase
       end
       unless options[:skip_routes]
         # Note that this fails for nested classes -- you're on your own with setting up the routes.
+        if options[:include_activation]
+          m.route_name('activate', '/activate/:activation_code', {:controller => controller_controller_name, :action => 'activate', :activation_code => nil})
+        end
+        if options[:stateful]
+          
+          # m.route_name('resources', model_controller_plural_name, {:member => { :suspend => :put, :unsuspend => :put, :purge => :delete }})
+          # map.resources :users, {:member => { :suspend => :put, :unsuspend => :put, :purge => :delete }}
+          
+          # m.route_name('activate', '/activate/:activation_code', {:controller => controller_controller_name, :action => 'activate', :activation_code => nil})
+          # map.activate "activate:activation_code", :controller => "users", :action => "activate", :activation_code => nil
+          #  
+          m.route_one_plural_resource_with_options(model_controller_plural_name, {:member => { :suspend => :put, :unsuspend => :put, :purge => :delete }})          
+        else
+          m.route_resources model_controller_plural_name
+        end
         m.route_resource  controller_singular_name
-        m.route_resources model_controller_plural_name
         m.route_name('signup',   '/signup',   {:controller => model_controller_plural_name, :action => 'new'})
         m.route_name('register', '/register', {:controller => model_controller_plural_name, :action => 'create'})
         m.route_name('login',    '/login',    {:controller => controller_controller_name, :action => 'new'})
@@ -276,12 +290,15 @@ class AuthenticatedGenerator < Rails::Generator::NamedBase
         puts "- Install the acts_as_state_machine plugin:"
         puts "    svn export http://elitists.textdriven.com/svn/plugins/acts_as_state_machine/trunk vendor/plugins/acts_as_state_machine"
       end
-      puts "- Add routes to these resources. In config/routes.rb, insert routes like:"
-      puts %(    map.signup '/signup', :controller => '#{model_controller_file_name}', :action => 'new')
-      puts %(    map.login  '/login',  :controller => '#{controller_file_name}', :action => 'new')
-      puts %(    map.logout '/logout', :controller => '#{controller_file_name}', :action => 'destroy')
-      if options[:include_activation]
-        puts %(    map.activate '/activate/:activation_code', :controller => '#{model_controller_file_name}', :action => 'activate', :activation_code => nil)
+      if options[:skip_routes]
+        puts "- Add routes to these resources. In config/routes.rb, insert routes like:"
+        puts %(    map.signup '/signup', :controller => '#{model_controller_file_name}', :action => 'new')
+        puts %(    map.register  '/register', :controller => '#{model_controller_file_name}', :action => 'create')
+        puts %(    map.login  '/login',  :controller => '#{controller_file_name}', :action => 'new')
+        puts %(    map.logout '/logout', :controller => '#{controller_file_name}', :action => 'destroy')
+        if options[:include_activation]
+          puts %(    map.activate '/activate/:activation_code', :controller => '#{model_controller_file_name}', :action => 'activate', :activation_code => nil)
+        end
       end
       if options[:stateful]
         puts  "  and modify the map.resources :#{model_controller_file_name} line to include these actions:"
@@ -295,9 +312,9 @@ class AuthenticatedGenerator < Rails::Generator::NamedBase
         puts "but allows dictionary attacks in the unlikely event your database is"
         puts "compromised and your site code is not.  See the README for more."
       elsif $rest_auth_keys_are_new
-        puts "We've create a new site key in #{site_keys_file}.  If you have existing"
-        puts "user accounts their passwords will no longer work (see README). As always,"
-        puts "keep this file safe but don't post it in public."
+        puts "We've created a new site key in config/initializers/#{site_keys_file}."
+        puts "If you have existing user accounts their passwords will no longer work (see README)."
+        puts "As always, keep this file safe and don't post it in public."
       else
         puts "We've reused the existing site key in #{site_keys_file}.  As always,"
         puts "keep this file safe but don't post it in public."
