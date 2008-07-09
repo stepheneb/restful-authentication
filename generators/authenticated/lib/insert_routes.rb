@@ -49,7 +49,7 @@ Rails::Generator::Commands::Create.class_eval do
     if action = options.delete(:action)
       newroute << ", :action => '#{action}'"
     end
-    if options
+    unless options.empty?
       newroute << ', ' + options.inspect[/\{(.*)\}/, 1]
     end
     logger.route newroute
