@@ -15,7 +15,7 @@ Rails::Generator::Commands::Create.class_eval do
   def route_one_plural_resource_with_options(resource, options = {})
      sentinel = 'ActionController::Routing::Routes.draw do |map|'
      
-     newroute = "map.resources #{resource}"
+     newroute = "map.resources #{resource.to_sym.inspect}"
 
      if options &&
        newroute << ', ' + options.inspect[/^\{(.*)\}$/, 1]
